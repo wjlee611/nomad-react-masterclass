@@ -1,4 +1,5 @@
 import { useQuery } from "react-query";
+import { Helmet } from "react-helmet";
 import {
   Link,
   Route,
@@ -80,8 +81,16 @@ const Container = styled.div`
 const Header = styled.header`
   height: 10vh;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
+  a {
+    width: 50px;
+    font-size: 40px;
+    color: ${(props) => props.theme.accentColor};
+  }
+  div {
+    width: 50px;
+  }
 `;
 const Title = styled.h1`
   font-size: 48px;
@@ -151,7 +160,10 @@ function Coin() {
     () => fetchCoinInfo(coinId)
   );
   const { isLoading: tickersLoading, data: tickersData } =
-    useQuery<TickersData>(["tickers", coinId], () => fetchCoinTickers(coinId));
+    useQuery<TickersData>(["tickers", coinId], () => fetchCoinTickers(coinId), {
+      refetchInterval: 5000,
+      notifyOnChangeProps: ["data"],
+    });
   // const [info, setInfo] = useState<InfoData>();
   // const [priceInfo, setPriceInfo] = useState<PriceData>();
   // const [loading, setLoading] = useState(true);
@@ -173,10 +185,17 @@ function Coin() {
 
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
+        <Link to="/">←</Link>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
+        <div></div>
       </Header>
       {loading ? (
         <Loader>Loading...</Loader>
@@ -192,8 +211,8 @@ function Coin() {
               <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>{tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -209,7 +228,11 @@ function Coin() {
             </OverviewItem>
             <OverviewItem>
               <span>Max Supply:</span>
-              <span>{tickersData?.max_supply}</span>
+              <span>
+                {tickersData?.max_supply === 0
+                  ? "Unlimited"
+                  : tickersData?.max_supply}
+              </span>
             </OverviewItem>
           </Overview>
 
@@ -224,10 +247,10 @@ function Coin() {
 
           <Switch>
             <Route path={`/${coinId}/price`}>
-              <Price />
+              <Price coinId={coinId} />
             </Route>
             <Route path={"/:coinId/chart"}>
-              <Chart />
+              <Chart coinId={coinId} />
             </Route>
           </Switch>
         </>
