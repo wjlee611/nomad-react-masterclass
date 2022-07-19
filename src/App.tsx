@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Header />
       <Switch>
-        <Route exact path="/">
+        <Route exact path={["/", "/movie/:movieId"]}>
           <Home />
         </Route>
         <Route path="/tv">
